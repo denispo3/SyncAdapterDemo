@@ -2,19 +2,22 @@ package com.thinkmobiles.demo.syncadapter;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import presentation.thinkmobiles.com.syncadapterdemo.R;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String ACCOUNT = "dummyaccount";
     // Instance fields
     private Account mAccount;
+    private static final String LOG_TAG = "denis";
+    public static final long PERIOD_IN_SECONDS = 90;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +25,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mAccount = createSyncAccount(getApplicationContext());
+        // Enable automatic syncing
+        ContentResolver.setSyncAutomatically(mAccount, getString(R.string.authority), true);
+        // Period has to be at least 60 seconds
+        ContentResolver.addPeriodicSync(mAccount, getString(R.string.authority), new Bundle(), PERIOD_IN_SECONDS);
+        syncNow();
     }
 
 
@@ -38,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
          * If successful, return the Account object, otherwise report an error.
          */
         if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+            Log.d(LOG_TAG, "accountManager: account added successfully");
             /*
              * If you don't set android:syncable="true" in
              * in your <provider> element in the manifest,
@@ -45,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
              * here.
              */
         } else {
-            /*
+            Log.d(LOG_TAG, "accountManager: account exists or error");
+             /*
              * The account exists or some other error occurred. Log this, report it,
              * or handle it internally.
              */
@@ -53,25 +63,18 @@ public class MainActivity extends AppCompatActivity {
         return newAccount;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    // Manual sync
+    public void syncNow() {
+        // Pass the settings flags by inserting them in a bundle
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        /*
+         * Request the sync for the default account, authority, and
+         * manual sync settings
+         */
+        ContentResolver.requestSync(mAccount, getString(R.string.authority), settingsBundle);
     }
 }

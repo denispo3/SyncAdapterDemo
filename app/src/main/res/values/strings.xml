@@ -4,7 +4,7 @@
     <string name="action_settings">Settings</string>
 
     <!--The authority for the sync adapter's content provider-->
-    <string name="authority">presentation.thinkmobiles.com.syncadapterdemo.provider</string>
+    <string name="authority">com.thinkmobiles.demo.syncadapter</string>
     <!--An account type, in the form of a domain name-->
-    <string name="account_type">thinkmobiles.com</string>
+    <string name="account_type">com.thinkmobiles.demo.syncadapter.account</string>
 </resources>
